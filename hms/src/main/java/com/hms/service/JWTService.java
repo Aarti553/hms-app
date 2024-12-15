@@ -8,51 +8,43 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 
 @Service
 public class JWTService {
-
     @Value("${jwt.algorithm.key}")
-    private String algorithmkey;
-
+    private String algorithmKey;
     @Value("${jwt.issuer}")
     private String issuer;
-
     @Value("${jwt.expiry.duration}")
-    private int expiryTime;
+    private Integer expiryTime;
 
-    private Algorithm algorithm;   //Jwt token has stared
-    @PostConstruct     // this annotation helps us to run this method Automatically when project is started.
-  public void postContruct(){
-//        System.out.println(algorithmkey);
-//        System.out.println(issuer);
-//        System.out.println(expiryTime);
+    private Algorithm algorithm;
 
-        algorithm= Algorithm.HMAC256(algorithmkey);
+    @PostConstruct
+    public void postConstruct() throws UnsupportedEncodingException {
+        algorithm = Algorithm.HMAC256(algorithmKey);
+    }
 
-    //algorithm key;- anyone who wants to decode this token (algorithm) should have this key.
-        // without this key token decoding is not allowed.
-  }
+    public String generateToken(String username) {
+        return JWT.create()
+                .withClaim("name", username)
+                .withExpiresAt(new Date(System.currentTimeMillis() + expiryTime))
+                .withIssuer(issuer)
+                .sign(algorithm);
+    }
 
-  //generating JWT Token formula= computer engineer is unemployed
-  public String generateToken(String username){
-     return JWT.create()
-              .withClaim("name",username)
-              .withExpiresAt(new Date(System.currentTimeMillis()+expiryTime))
-              .withIssuer(issuer)
-              .sign(algorithm);//consist signature.
-  }
-  //verify the token
-  //junior with boxer Vicky
-  public String  getUsername(String token) {
-      DecodedJWT decodedJWT =
-                      JWT.
-                      require(algorithm).
-                      withIssuer(issuer)
-                      .build()
-                      .verify(token);
-      return decodedJWT.getClaim("name").asString();
-  }
 
+    public String  getUsername(String token) {
+        DecodedJWT decodedJWT =
+                JWT.
+                        require(algorithm).
+                        withIssuer(issuer)
+                        .build()
+                        .verify(token);
+        return decodedJWT.getClaim("name").asString();
+    }
 }
+
+

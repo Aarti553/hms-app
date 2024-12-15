@@ -5,7 +5,7 @@ import com.hms.payload.LoginDto;
 import com.hms.payload.TokenDto;
 import com.hms.repository.AppUserRepository;
 import com.hms.service.AppUserService;
-import jakarta.validation.Valid;
+//import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -26,7 +26,7 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> CreateUser(
-            @Valid @RequestBody AppUser user
+            @RequestBody AppUser user
     ) {
         Optional<AppUser> opUsername =
                 appUserRepository.findByUsername(user.getUsername());
@@ -41,6 +41,7 @@ public class UserController {
         }
         String encryptedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(5));
         user.setPassword(encryptedPassword);
+        user.setRole("ROLE_USER");
         AppUser savedUser = appUserRepository.save(user);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
@@ -64,15 +65,41 @@ public class UserController {
 //            return new ResponseEntity<>("Invalid username/password", HttpStatus.FORBIDDEN);
 //        }
 
+        System.out.println("Hello");
+
         String token = appUserService.verifyLogin(dto);
-        if (token != null) {
+        if(token!=null){
             TokenDto tokenDto = new TokenDto();
             tokenDto.setToken(token);
             tokenDto.setType("JWT");
             return new ResponseEntity<>(tokenDto, HttpStatus.OK);
-        } else {
+        }else{
             return new ResponseEntity<>("Invalid username/password", HttpStatus.FORBIDDEN);
         }
     }
-}
 
+    @PostMapping("/signup-property-owner")
+    public ResponseEntity<?> CreatePropertyOwnerUser(
+            @RequestBody AppUser user
+    ) {
+        Optional<AppUser> opUsername =
+                appUserRepository.findByUsername(user.getUsername());
+
+        if (opUsername.isPresent()) {//have to be false for proceed further.
+            return new ResponseEntity<>("Username already taken", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        Optional<AppUser> opEmail = appUserRepository.findByEmail(user.getEmail());
+
+        if (opEmail.isPresent()) {//have to be false for proceed further.
+            return new ResponseEntity<>("Email already taken", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        String encryptedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt(5));
+        user.setPassword(encryptedPassword);
+        user.setRole("ROLE_OWNER");
+        AppUser savedUser = appUserRepository.save(user);
+        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+    }
+}
+/*
+@RequestBody this will copy data from JSON to Dto.
+ */

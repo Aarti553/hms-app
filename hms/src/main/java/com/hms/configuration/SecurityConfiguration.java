@@ -1,35 +1,43 @@
 package com.hms.configuration;
 
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
+
 @Configuration
 public class SecurityConfiguration {
- private JWTFilter jwtFilter;
+
+    private JWTFilter jwtFilter;
 
     public SecurityConfiguration(JWTFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http
-    ) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         //h(cd)2
         http.csrf().disable().cors().disable();
-     http.addFilterBefore(jwtFilter,AuthorizationFilter.class);
+        http.addFilterBefore(jwtFilter, AuthorizationFilter.class);
+
         //haap
         http.authorizeHttpRequests().anyRequest().permitAll();
-       return http.build();
+
+//        http.authorizeHttpRequests().
+//                requestMatchers("/api/v1/users/login","/api/v1/users/signup","/api/v1/users/signup-property-owner")
+//                .permitAll()
+//                .requestMatchers("/api/v1/country/addCountry").hasAnyRole("OWNER","ADMIN")
+//                .anyRequest().authenticated();
+
+        return http.build();
 
     }
 }
 
-
+//http://localhost:8080/api/v1/country/addCountry
  /* note.1. Csrf-Cross Site Request Forgery attack
         when I enable csrf this will avoid Cross Site Request Forgery attacks in your Application.
         Cors-when I enable your Api is accessible only for certain websites ,
