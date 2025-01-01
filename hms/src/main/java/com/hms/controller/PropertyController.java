@@ -17,6 +17,10 @@ public class PropertyController {
     @Autowired
     private PropertyService propertyService;
 
+//    public PropertyController(PropertyService propertyService) {
+//        this.propertyService = propertyService;
+//    }
+
     @PostMapping
     public ResponseEntity<PropertyDto> createProperty(
             @RequestBody PropertyDto propertyDto) {
@@ -44,11 +48,19 @@ public class PropertyController {
         PropertyDto updatedProperty = propertyService.updateProperty(id, propertyDto);
         return new ResponseEntity<>(updatedProperty, HttpStatus.OK);
     }
-    @Transactional
+@Transactional
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProperty(
             @PathVariable Long id) {
         propertyService.deleteProperty(id);
         return new ResponseEntity<>("Property deleted successfully", HttpStatus.OK);
+    }
+
+    @GetMapping("/search-hotels")
+    public ResponseEntity<List<PropertyDto>> searchHotels(
+            @RequestParam String name
+    ) {
+        List<PropertyDto> properties = propertyService.searchHotels(name);
+        return new ResponseEntity<>(properties, HttpStatus.OK);
     }
 }

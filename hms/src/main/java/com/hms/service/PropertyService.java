@@ -2,11 +2,14 @@ package com.hms.service;
 
 import com.hms.payload.PropertyDto;
 import com.hms.entity.Property;
-import com.hms.repository.PropertyRepository;
 import com.hms.entity.Country;
 import com.hms.entity.City;
+import com.hms.repository.CityRepository;
+import com.hms.repository.PropertyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,6 +18,8 @@ public class PropertyService {
 
     @Autowired
     private PropertyRepository propertyRepository;
+    @Autowired
+    private CityRepository cityRepository;
 
     public PropertyDto createProperty(PropertyDto propertyDto) {
         Property property = new Property();
@@ -69,7 +74,7 @@ public class PropertyService {
         Property updatedProperty = propertyRepository.save(property);
         return mapToDto(updatedProperty);
     }
-
+ @Transactional
     public void deleteProperty(Long id) {
         Property property = propertyRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Property not found"));
@@ -86,6 +91,36 @@ public class PropertyService {
         propertyDto.setNoOfBeds(property.getNo_of_beds());
         propertyDto.setCountryId(property.getCountry().getId());
         propertyDto.setCityId(property.getCity().getId());
+        return propertyDto;
+    }
+
+    public List<PropertyDto> searchHotels(String name) {
+        List<Property> properties = propertyRepository.searchHotels(name);
+
+        // Convert the list of Property entities to a list of PropertyDto objects
+        return properties.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    private PropertyDto convertToDto(Property property) {
+        PropertyDto propertyDto = new PropertyDto();
+
+        propertyDto.setId(property.getId());
+        propertyDto.setName(property.getName());
+        propertyDto.setNoOfGuest(property.getNo_of_guest());
+        propertyDto.setNoOfrooms(property.getNo_of_rooms()); // Correct mapping
+        propertyDto.setNoOfBathrooms(property.getNo_of_bathrooms()); // Correct mapping
+        propertyDto.setNoOfBeds(property.getNo_of_beds());
+
+        // Map country and city ID
+        if (property.getCountry() != null) {
+            propertyDto.setCountryId(property.getCountry().getId());
+        }
+        if (property.getCity() != null) {
+            propertyDto.setCityId(property.getCity().getId());
+        }
+
         return propertyDto;
     }
 }
