@@ -48,4 +48,6 @@ public class SecurityConfiguration {
        * @Configuration annotation will run automatically.
        *SecurityFilterChain will filter the which URL who can access the which URL.
        *401 status code which is basically for unAuthorized access.
+       **After login only user can give the reviews,and now we now that which user can give the review after login in
+we can control from the config file.
                  */
